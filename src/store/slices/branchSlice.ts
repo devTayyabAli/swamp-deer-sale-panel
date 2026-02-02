@@ -25,7 +25,7 @@ export const fetchBranches = createAsyncThunk(
         }
     },
     {
-        condition: (params, { getState }) => {
+        condition: (_params, { getState }) => {
             const { branches } = getState() as { branches: BranchState };
             if (branches.isLoading) return false;
         }

@@ -46,7 +46,7 @@ const CreateInvestor = () => {
                 email,
                 phone, 
                 address, 
-                isReferrer: isAddingReferrer,
+                role: isAddingReferrer ? 'referrer' : 'investor',
                 upline: selectedUpline || undefined
             })).unwrap();
             

@@ -9,16 +9,17 @@ import SearchableDropdown from '../components/SearchableDropdown';
 const CreateInvestor = () => {
     const dispatch = useDispatch<AppDispatch>();
     const { items: allInvestors } = useSelector((state: RootState) => state.investors);
-    
+
     const [fullName, setFullName] = useState('');
     const [email, setEmail] = useState('');
-    const [phone, setPhone] = useState('');
+    const [phone, setPhone] = useState('+92 ');
     const [address, setAddress] = useState('');
     const [selectedUpline, setSelectedUpline] = useState('');
-    
+    const [phoneError, setPhoneError] = useState('');
+
     // Local loading state
     const [isSubmitting, setIsSubmitting] = useState(false);
-    
+
     const navigate = useNavigate();
     const location = useLocation();
     const queryParams = new URLSearchParams(location.search);
@@ -38,25 +39,35 @@ const CreateInvestor = () => {
             return;
         }
 
+        // Validate phone number length (Pakistani numbers: +92 + 10 digits usually)
+        // clean spaces to count digits
+        const phoneDigits = phone.replace(/\D/g, ''); // removes +, spaces
+        if (phoneDigits.length !== 12) {
+            setPhoneError('Please enter a valid Pakistani phone number (+92 3XX XXXXXXX)');
+            return;
+        }
+
+        setPhoneError(''); // clear any error on submit if valid now
+
         setIsSubmitting(true);
         const toastId = toast.loading(`Creating ${isAddingReferrer ? 'Referrer' : 'Investor'}...`);
         try {
-            await dispatch(createNewInvestor({ 
-                fullName, 
+            await dispatch(createNewInvestor({
+                fullName,
                 email,
-                phone, 
-                address, 
+                phone,
+                address,
                 role: isAddingReferrer ? 'referrer' : 'investor',
                 upline: selectedUpline || undefined
             })).unwrap();
-            
+
             toast.success(`${isAddingReferrer ? 'Referrer' : 'Investor'} added successfully`, { id: toastId });
             navigate('/log-sale'); // Navigate back to sales entry
         } catch (err: unknown) {
             if (typeof err === 'string') {
-                 toast.error(err, { id: toastId });
+                toast.error(err, { id: toastId });
             } else {
-                 toast.error('Failed to add profile', { id: toastId });
+                toast.error('Failed to add profile', { id: toastId });
             }
         } finally {
             setIsSubmitting(false);
@@ -79,39 +90,69 @@ const CreateInvestor = () => {
                     <div className="grid grid-cols-1 gap-6">
                         <div className="flex flex-col gap-2">
                             <label className="text-[11px] font-black text-gray-900 uppercase tracking-widest ml-1 opacity-70" htmlFor="full-name">Full Name</label>
-                            <input 
-                                className="w-full rounded-lg border-[#dbe6df] bg-white focus:ring-2 focus:ring-[#006820]/5 focus:border-[#006820] text-sm p-3.5 placeholder:text-gray-400 font-medium transition-all" 
-                                id="full-name" 
-                                placeholder="e.g. Ali Khan" 
+                            <input
+                                className="w-full rounded-lg border-[#dbe6df] bg-white focus:ring-2 focus:ring-[#006820]/5 focus:border-[#006820] text-sm p-3.5 placeholder:text-gray-400 font-medium transition-all"
+                                id="full-name"
+                                placeholder="e.g. Ali Khan"
                                 type="text"
                                 value={fullName}
                                 onChange={(e) => setFullName(e.target.value)}
                             />
                         </div>
-                        
+
                         <div className="flex flex-col gap-2">
                             <label className="text-[11px] font-black text-gray-900 uppercase tracking-widest ml-1 opacity-70" htmlFor="phone">Phone Number</label>
                             <div className="relative">
                                 <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 material-symbols-outlined text-lg opacity-50">call</span>
-                                <input 
-                                    className="w-full rounded-lg border-[#dbe6df] bg-white focus:ring-2 focus:ring-[#006820]/5 focus:border-[#006820] text-sm pl-11 p-3.5 placeholder:text-gray-400 font-medium transition-all" 
-                                    id="phone" 
-                                    placeholder="+92 300 1234567" 
+                                <input
+                                    className={`w-full rounded-lg border-[#dbe6df] bg-white focus:ring-2 focus:ring-[#006820]/5 focus:border-[#006820] text-sm pl-11 p-3.5 placeholder:text-gray-400 font-medium transition-all ${phoneError ? 'border-red-500 focus:border-red-500 focus:ring-red-500/5' : ''}`}
+                                    id="phone"
+                                    placeholder="+92 300 1234567"
                                     type="tel"
                                     value={phone}
-                                    onChange={(e) => setPhone(e.target.value)}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        let newVal = val;
+
+                                        // Ensure it always starts with +92 
+                                        if (!val.startsWith('+92 ')) {
+                                            if (val.startsWith('+92')) {
+                                                newVal = '+92 ';
+                                            } else {
+                                                newVal = '+92 ' + val.replace(/^\+92 ?/, '').replace(/[^0-9]/g, '');
+                                            }
+                                        } else {
+                                            // Allow only numbers (no spaces or alphabets) after prefix
+                                            newVal = '+92 ' + val.substring(4).replace(/[^0-9]/g, '');
+                                        }
+
+                                        // Max length check (92 + 10 digits = 12 digits total, or 4 (prefix) + 10 = 14 chars)
+                                        if (newVal.replace(/\D/g, '').length <= 12) {
+                                            setPhone(newVal);
+                                            // Real-time validation
+                                            const digits = newVal.replace(/\D/g, '');
+                                            if (digits.length === 12) {
+                                                setPhoneError('');
+                                            } else if (digits.length > 0) {
+                                                setPhoneError('Number must be 10 digits after +92');
+                                            } else {
+                                                setPhoneError('');
+                                            }
+                                        }
+                                    }}
                                 />
                             </div>
+                            {phoneError && <p className="text-red-500 text-[10px] font-bold mt-1 ml-1 uppercase tracking-wider">{phoneError}</p>}
                         </div>
 
                         <div className="flex flex-col gap-2">
                             <label className="text-[11px] font-black text-gray-900 uppercase tracking-widest ml-1 opacity-70" htmlFor="email">Email Address</label>
                             <div className="relative">
                                 <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 material-symbols-outlined text-lg opacity-50">mail</span>
-                                <input 
-                                    className="w-full rounded-lg border-[#dbe6df] bg-white focus:ring-2 focus:ring-[#006820]/5 focus:border-[#006820] text-sm pl-11 p-3.5 placeholder:text-gray-400 font-medium transition-all" 
-                                    id="email" 
-                                    placeholder="e.g. contact@example.com" 
+                                <input
+                                    className="w-full rounded-lg border-[#dbe6df] bg-white focus:ring-2 focus:ring-[#006820]/5 focus:border-[#006820] text-sm pl-11 p-3.5 placeholder:text-gray-400 font-medium transition-all"
+                                    id="email"
+                                    placeholder="e.g. contact@example.com"
                                     type="email"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
@@ -119,7 +160,7 @@ const CreateInvestor = () => {
                             </div>
                         </div>
 
-                        <SearchableDropdown 
+                        <SearchableDropdown
                             label={isAddingReferrer ? "Referrer Upline (Optional)" : "Upline (Referrer)"}
                             placeholder="Select Upline Partner..."
                             options={referrers}
@@ -130,10 +171,10 @@ const CreateInvestor = () => {
 
                         <div className="flex flex-col gap-2">
                             <label className="text-[11px] font-black text-gray-900 uppercase tracking-widest ml-1 opacity-70" htmlFor="address">Address</label>
-                            <textarea 
-                                className="w-full rounded-lg border-[#dbe6df] bg-white focus:ring-2 focus:ring-[#006820]/5 focus:border-[#006820] text-sm p-3.5 placeholder:text-gray-400 font-medium transition-all" 
-                                id="address" 
-                                placeholder="Enter residential or office address details..." 
+                            <textarea
+                                className="w-full rounded-lg border-[#dbe6df] bg-white focus:ring-2 focus:ring-[#006820]/5 focus:border-[#006820] text-sm p-3.5 placeholder:text-gray-400 font-medium transition-all"
+                                id="address"
+                                placeholder="Enter residential or office address details..."
                                 rows={3}
                                 value={address}
                                 onChange={(e) => setAddress(e.target.value)}
@@ -142,14 +183,14 @@ const CreateInvestor = () => {
                     </div>
 
                     <div className="pt-8 border-t border-[#f0f4f2] flex flex-col-reverse sm:flex-row items-center justify-between gap-6 sm:gap-0">
-                        <button 
+                        <button
                             type="button"
                             onClick={() => navigate('/log-sale')}
                             className="text-sm font-black text-gray-400 hover:text-forest-green uppercase tracking-widest transition-colors"
                         >
                             Cancel
                         </button>
-                        <button 
+                        <button
                             onClick={handleSubmit}
                             disabled={isSubmitting}
                             className="w-full sm:w-auto flex items-center justify-center gap-3 px-10 py-4 rounded-xl bg-forest-green hover:bg-black text-white text-xs font-black uppercase tracking-[0.2em] transition-all shadow-xl shadow-forest-green/20 disabled:opacity-50 group/btn"

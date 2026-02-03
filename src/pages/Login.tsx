@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import logo from '../assets/logo.png';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -35,31 +36,28 @@ const Login = () => {
 
       <main className="w-full max-w-[440px] relative z-10 animate-in fade-in zoom-in duration-700">
         <div className="text-center mb-10">
-            <div className="inline-flex items-center gap-3 mb-4 bg-forest-green p-3 rounded-2xl shadow-xl shadow-forest-green/20">
-                <div className="size-8 text-warm-gold">
-                    <svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                        <path clipRule="evenodd" d="M24 18.4228L42 11.475V34.3663C42 34.7796 41.7457 35.1504 41.3601 35.2992L24 42V18.4228Z" fill="currentColor" fillRule="evenodd"></path>
-                        <path clipRule="evenodd" d="M24 8.18819L33.4123 11.574L24 15.2071L14.5877 11.574L24 8.18819ZM9 15.8487L21 20.4805V37.6263L9 32.9945V15.8487ZM27 37.6263V20.4805L39 15.8487V32.9945L27 37.6263ZM25.354 2.29885C24.4788 1.98402 23.5212 1.98402 22.646 2.29885L4.98454 8.65208C3.7939 9.08038 3 10.2097 3 11.475V34.3663C3 36.0196 4.01719 37.5026 5.55962 38.098L22.9197 44.7987C23.6149 45.0671 24.3851 45.0671 25.0803 44.7987L42.4404 38.098C43.9828 37.5026 45 36.0196 45 34.3663V11.475C45 10.2097 44.2061 9.08038 43.0155 8.65208L25.354 2.29885Z" fill="currentColor" fillRule="evenodd"></path>
-                    </svg>
-                </div>
+          <div className="inline-flex items-center gap-3 mb-4 bg-forest-green p-3 rounded-2xl shadow-xl shadow-forest-green/20">
+            <div className="size-8 text-warm-gold">
+              <img src={logo} alt="Logo" className="w-full h-full object-contain" />
             </div>
-            <h1 className="text-3xl font-black text-forest-green tracking-tight mb-2">Internal Access</h1>
-            <p className="text-gray-500 text-sm font-medium italic">Secure Enterprise Resource Planning Gateway</p>
+          </div>
+          {/* <h1 className="text-3xl font-black text-forest-green tracking-tight mb-2">Internal Access</h1>
+            <p className="text-gray-500 text-sm font-medium italic">Secure Enterprise Resource Planning Gateway</p> */}
         </div>
 
         <div className="bg-white rounded-[32px] shadow-2xl shadow-forest-green/10 border border-border-light p-8 sm:p-10 relative overflow-hidden group">
           {/* Subtle gold accent line at the top */}
           <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-warm-gold via-swamp-deer to-warm-gold opacity-80"></div>
-          
+
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div className="space-y-2">
               <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Identity Endpoint (Email)</label>
               <div className="relative group/input">
                 <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within/input:text-warm-gold transition-colors">alternate_email</span>
-                <input 
-                  className="w-full pl-12 pr-4 py-4 bg-[#fbfcfa] border border-border-light rounded-2xl text-forest-green font-bold text-sm focus:ring-4 focus:ring-warm-gold/10 focus:border-warm-gold outline-none transition-all placeholder:text-gray-300" 
-                  placeholder="e.g. operative@salespro.com" 
-                  required 
+                <input
+                  className="w-full pl-12 pr-4 py-4 bg-[#fbfcfa] border border-border-light rounded-2xl text-forest-green font-bold text-sm focus:ring-4 focus:ring-warm-gold/10 focus:border-warm-gold outline-none transition-all placeholder:text-gray-300"
+                  placeholder="e.g. operative@salespro.com"
+                  required
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -71,15 +69,15 @@ const Login = () => {
               <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Access Protocol (Password)</label>
               <div className="relative group/input">
                 <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within/input:text-warm-gold transition-colors">lock</span>
-                <input 
-                  className="w-full pl-12 pr-12 py-4 bg-[#fbfcfa] border border-border-light rounded-2xl text-forest-green font-bold text-sm focus:ring-4 focus:ring-warm-gold/10 focus:border-warm-gold outline-none transition-all placeholder:text-gray-300" 
-                  placeholder="Enter secure key" 
-                  required 
+                <input
+                  className="w-full pl-12 pr-12 py-4 bg-[#fbfcfa] border border-border-light rounded-2xl text-forest-green font-bold text-sm focus:ring-4 focus:ring-warm-gold/10 focus:border-warm-gold outline-none transition-all placeholder:text-gray-300"
+                  placeholder="Enter secure key"
+                  required
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
-                <button 
+                <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300 hover:text-forest-green transition-colors"
@@ -90,22 +88,22 @@ const Login = () => {
             </div>
 
             <div className="flex items-center justify-between px-1">
-                <Link to="/forgot-password" title="Lost Credentials?" className="text-[10px] font-black uppercase tracking-widest text-swamp-deer hover:text-warm-gold transition-colors">
-                    Lost Credentials?
-                </Link>
+              <Link to="/forgot-password" title="Lost Credentials?" className="text-[10px] font-black uppercase tracking-widest text-swamp-deer hover:text-warm-gold transition-colors">
+                Lost Credentials?
+              </Link>
             </div>
 
-            <button 
+            <button
               disabled={isLoading}
-              className="w-full bg-forest-green hover:bg-black text-white py-4 rounded-2xl font-black text-xs uppercase tracking-[0.3em] shadow-xl shadow-forest-green/20 hover:shadow-forest-green/30 active:scale-95 transition-all disabled:opacity-50 mt-4 flex items-center justify-center gap-2 group/btn" 
+              className="w-full bg-forest-green hover:bg-black text-white py-4 rounded-2xl font-black text-xs uppercase tracking-[0.3em] shadow-xl shadow-forest-green/20 hover:shadow-forest-green/30 active:scale-95 transition-all disabled:opacity-50 mt-4 flex items-center justify-center gap-2 group/btn"
               type="submit"
             >
               {isLoading ? (
                 <div className="size-4 border-2 border-warm-gold border-t-transparent rounded-full animate-spin"></div>
               ) : (
                 <>
-                    Initiate Session
-                    <span className="material-symbols-outlined text-sm text-warm-gold group-hover/btn:translate-x-1 transition-transform">login</span>
+                  Initiate Session
+                  <span className="material-symbols-outlined text-sm text-warm-gold group-hover/btn:translate-x-1 transition-transform">login</span>
                 </>
               )}
             </button>
@@ -114,11 +112,11 @@ const Login = () => {
       </main>
 
       <footer className="mt-12 text-center space-y-4 relative z-10 animate-in fade-in slide-in-from-bottom duration-1000 delay-300">
-        <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.25em]">© 2024 SalesPro Management Systems</p>
-        <div className="flex justify-center gap-6">
+        <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.25em]">© {new Date().getFullYear()} Swamp Deer</p>
+        {/* <div className="flex justify-center gap-6">
           <a className="text-[10px] font-black text-swamp-deer uppercase tracking-widest hover:text-warm-gold transition-colors" href="#">Legal Documentation</a>
           <a className="text-[10px] font-black text-swamp-deer uppercase tracking-widest hover:text-warm-gold transition-colors" href="#">Security Protocols</a>
-        </div>
+        </div> */}
       </footer>
     </div>
   );

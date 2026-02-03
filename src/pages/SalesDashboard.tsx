@@ -28,8 +28,8 @@ const SalesDashboard = () => {
                     <h1 className="text-xl sm:text-2xl font-black text-forest-green tracking-tight leading-none">Executive Dashboard</h1>
                     <p className="text-gray-400 text-[11px] mt-1.5 font-bold uppercase tracking-widest opacity-70">Operational network overview</p>
                 </div>
-                <button 
-                    onClick={() => window.location.href='/log-sale'} 
+                <button
+                    onClick={() => window.location.href = '/log-sale'}
                     className="w-full sm:w-auto bg-black text-white px-6 py-3 rounded-lg text-[11px] font-black flex items-center justify-center gap-2 hover:bg-forest-green transition-all shadow-xl shadow-forest-green/10 active:scale-95 group"
                 >
                     <span className="material-symbols-outlined text-lg group-hover:rotate-90 transition-transform">add_circle</span>
@@ -49,7 +49,7 @@ const SalesDashboard = () => {
                         </div>
                     </div>
                     <h3 className="text-3xl font-black text-forest-green tracking-tighter relative z-10">
-                        ${stats.totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                        Rs {stats.totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </h3>
                     <div className="flex items-center gap-1.5 mt-3 relative z-10">
                         <div className="h-1 w-12 bg-warm-gold rounded-full"></div>
@@ -70,7 +70,7 @@ const SalesDashboard = () => {
                         </div>
                     </div>
                     <h3 className="text-3xl font-black text-forest-green tracking-tighter relative z-10">
-                        ${stats.totalCommission.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                        Rs {stats.totalCommission.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </h3>
                     <div className="flex items-center gap-1.5 mt-3 relative z-10">
                         <div className="h-1 w-12 bg-emerald-500 rounded-full"></div>
@@ -87,8 +87,8 @@ const SalesDashboard = () => {
                         <span className="material-symbols-outlined text-forest-green text-xl">inventory_2</span>
                         <h2 className="text-sm font-black text-forest-green uppercase tracking-wider">Recent Enterprise Sales</h2>
                     </div>
-                    <button 
-                        onClick={() => window.location.href='/history'}
+                    <button
+                        onClick={() => window.location.href = '/history'}
                         className="text-[10px] font-black text-warm-gold uppercase tracking-[0.15em] hover:text-forest-green transition-colors flex items-center gap-1.5"
                     >
                         Vault View
@@ -132,9 +132,9 @@ const SalesDashboard = () => {
                                                 {(sale.branchId as any)?.name || 'Central Hub'}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 text-[13px] font-black text-forest-green whitespace-nowrap">${sale.amount.toLocaleString()}</td>
+                                        <td className="px-6 py-4 text-[13px] font-black text-forest-green whitespace-nowrap">Rs {sale.amount.toLocaleString()}</td>
                                         <td className="px-6 py-4 text-right whitespace-nowrap">
-                                            <span className="text-[13px] font-black text-warm-gold">${sale.commission.toLocaleString()}</span>
+                                            <span className="text-[13px] font-black text-warm-gold">Rs {sale.commission.toLocaleString()}</span>
                                         </td>
                                     </tr>
                                 ))

@@ -9,6 +9,8 @@ export interface User {
     productStatus?: 'with_product' | 'without_product';
     branchId?: string | Branch;
     token?: string;
+    profitRate?: number;
+    commissionRate?: number;
 }
 
 export interface Branch {
@@ -31,6 +33,8 @@ export interface Investor {
     upline?: string | User;
     status?: 'active' | 'banned';
     productStatus?: 'with_product' | 'without_product';
+    profitRate?: number;
+    commissionRate?: number;
     createdAt?: string;
 }
 

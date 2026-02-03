@@ -12,11 +12,11 @@ import SearchableDropdown from '../components/SearchableDropdown';
 const LogSale = () => {
     const { user } = useAuth();
     const dispatch = useDispatch<AppDispatch>();
-    
+
     // Redux state
     const { items: branches } = useSelector((state: RootState) => state.branches);
     const { items: allInvestors } = useSelector((state: RootState) => state.investors);
-    
+
     const [description, setDescription] = useState('');
     const [amount, setAmount] = useState<number>(0);
     const [commissionRate, setCommissionRate] = useState(0.05); // Default 5%
@@ -25,11 +25,12 @@ const LogSale = () => {
     const [selectedInvestor, setSelectedInvestor] = useState('');
     const [selectedReferrer, setSelectedReferrer] = useState('company');
     const [paymentMethod, setPaymentMethod] = useState<'Cash in hand' | 'Bank account'>('Cash in hand');
-    
+    const [investorType, setInvestorType] = useState('With Product');
+
     // Local loading state for form submission interaction
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [successSale, setSuccessSale] = useState<{ _id: string, documentPath?: string } | null>(null);
-    
+
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -49,11 +50,11 @@ const LogSale = () => {
 
     useEffect(() => {
         if (!user) return;
-        
+
         // Extract branch ID from user object (handles populated or ID only)
         const userBranchId = user.branchId;
         const branchIdStr = typeof userBranchId === 'string' ? userBranchId : (userBranchId as any)?._id || (userBranchId as any)?.id;
-        
+
         if (branchIdStr && !selectedBranch) {
             setSelectedBranch(branchIdStr);
         }
@@ -62,14 +63,24 @@ const LogSale = () => {
     useEffect(() => {
         if (selectedInvestor) {
             const investor = (allInvestors || []).find(i => i._id === selectedInvestor);
-            if (investor && investor.upline) {
+            if (investor) {
                 const uplineId = typeof investor.upline === 'string' ? investor.upline : (investor.upline as any)?._id;
                 if (uplineId) {
                     setSelectedReferrer(uplineId);
+                } else {
+                    setSelectedReferrer('company');
                 }
-            } else {
-                // Default back to company if no upline exists
-                setSelectedReferrer('company');
+
+                // Set default rates from investor profile
+                if (investor.profitRate !== undefined) {
+                    setInvestorProfitRate(investor.profitRate);
+                }
+                if (investor.commissionRate !== undefined) {
+                    setCommissionRate(investor.commissionRate);
+                }
+                if (investor.productStatus) {
+                    setInvestorType(investor.productStatus === 'with_product' ? 'With Product' : 'Without Product');
+                }
             }
         }
     }, [selectedInvestor, allInvestors]);
@@ -103,16 +114,16 @@ const LogSale = () => {
                 investorProfit: amount * investorProfitRate,
                 paymentMethod
             })).unwrap(); // Unwrap to catch errors in the try/catch block
-            
+
             toast.success('Sale logged successfully!', { id: toastId });
             setSuccessSale(result);
             // Don't navigate immediately, let them see the success state/print button
             // navigate('/dashboard');
         } catch (err: unknown) {
             if (typeof err === 'string') {
-                 toast.error(err, { id: toastId });
+                toast.error(err, { id: toastId });
             } else {
-                 toast.error('Failed to log sale', { id: toastId });
+                toast.error('Failed to log sale', { id: toastId });
             }
         } finally {
             setIsSubmitting(false);
@@ -129,7 +140,7 @@ const LogSale = () => {
 
     const handlePrint = () => {
         if (successSale?.documentPath) {
-            const apiBase = 'http://localhost:5000'; // Should ideally come from env
+            const apiBase = 'https://www.swampdeer.cloud'; // Should ideally come from env
             window.open(`${apiBase}/${successSale.documentPath}`, '_blank');
         }
     };
@@ -140,34 +151,34 @@ const LogSale = () => {
                 <div className="bg-white rounded-[32px] shadow-[0_25px_60px_-15px_rgba(0,104,32,0.12)] border border-[#dbe6df]/40 overflow-hidden text-center p-10 sm:p-14 relative">
                     {/* Background subtle gradient element */}
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#006820]/40 to-transparent"></div>
-                    
+
                     <div className="size-20 bg-[#f0f7f2] rounded-full flex items-center justify-center mx-auto mb-8 shadow-inner">
                         <span className="material-symbols-outlined text-[#006820] text-4xl font-black">check_circle</span>
                     </div>
-                    
+
                     <h1 className="text-[#111813] text-3xl font-black mb-4 tracking-tight leading-[1.1]">Sale Logged Successfully!</h1>
                     <p className="text-[#61896f] text-[15px] font-medium mb-12 leading-relaxed px-2">
                         The investment document has been generated and is ready for the investor to review.
                     </p>
-                    
+
                     <div className="space-y-4">
-                        <button 
+                        <button
                             onClick={handlePrint}
                             className="w-full flex items-center justify-center gap-3 px-8 py-4 rounded-2xl bg-[#006820] hover:bg-black text-white text-[15px] font-black transition-all shadow-xl shadow-[#006820]/15 active:scale-[0.98]"
                         >
                             <span className="material-symbols-outlined text-xl">print</span>
                             Print Investment Receipt
                         </button>
-                        
-                        <button 
+
+                        <button
                             onClick={() => navigate('/dashboard')}
                             className="w-full flex items-center justify-center gap-3 px-8 py-4 rounded-2xl border-2 border-[#f0f4f2] text-[#4a5f52] text-[15px] font-bold hover:bg-[#fbfcfa] hover:border-[#dbe6df] transition-all active:scale-[0.98]"
                         >
                             Back to Dashboard
                         </button>
                     </div>
-                    
-                    <button 
+
+                    <button
                         onClick={() => setSuccessSale(null)}
                         className="mt-10 text-[#006820] font-black text-xs uppercase tracking-widest hover:opacity-70 transition-opacity"
                     >
@@ -193,7 +204,7 @@ const LogSale = () => {
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         {/* Referrer Selector */}
-                        <SearchableDropdown 
+                        <SearchableDropdown
                             label="Referrer Info"
                             placeholder="Select Referrer..."
                             options={referrers}
@@ -205,7 +216,7 @@ const LogSale = () => {
                         />
 
                         {/* Investor Selector */}
-                        <SearchableDropdown 
+                        <SearchableDropdown
                             label="Investor Info"
                             placeholder="Select Investor..."
                             options={investors}
@@ -216,7 +227,7 @@ const LogSale = () => {
                             icon="person"
                         />
 
-                         {/* Branch Display (Readonly) */}
+                        {/* Branch Display (Readonly) */}
                         <div className="flex flex-col gap-2.5 relative">
                             <div className="flex justify-between items-center mb-0.5">
                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Assigned Branch</label>
@@ -237,13 +248,13 @@ const LogSale = () => {
                         <h2 className="text-[#111813] text-2xl font-black tracking-tight flex items-center gap-3 mb-8">
                             Sale Details
                         </h2>
-                        
+
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div className="space-y-2 col-span-1">
                                 <label className="text-[11px] font-black text-[#111813] uppercase tracking-widest ml-1 opacity-70">Sale Description</label>
-                                <input 
-                                    className="w-full rounded-lg border-[#dbe6df] bg-white focus:ring-2 focus:ring-[#006820]/5 focus:border-[#006820] text-[13px] p-3 placeholder:text-gray-300 font-medium transition-all" 
-                                    placeholder="Enter specific details about the sale items" 
+                                <input
+                                    className="w-full rounded-lg border-[#dbe6df] bg-white focus:ring-2 focus:ring-[#006820]/5 focus:border-[#006820] text-[13px] p-3 placeholder:text-gray-300 font-medium transition-all"
+                                    placeholder="Enter specific details about the sale items"
                                     value={description}
                                     onChange={(e) => setDescription(e.target.value)}
                                 />
@@ -251,22 +262,48 @@ const LogSale = () => {
                             <div className="space-y-2">
                                 <label className="text-[11px] font-black text-[#111813] uppercase tracking-widest ml-1 opacity-70">Investor Type</label>
                                 <div className="relative">
-                                    <select className="w-full rounded-lg border-[#dbe6df] bg-white focus:ring-2 focus:ring-[#006820]/5 focus:border-[#006820] text-[13px] p-3 font-medium text-gray-700">
-                                        <option>With Product</option>
-                                         <option>With Out Product</option>
+                                    <select
+                                        className="w-full rounded-lg border-[#dbe6df] bg-white focus:ring-2 focus:ring-[#006820]/5 focus:border-[#006820] text-[13px] p-3 font-medium text-gray-700"
+                                        value={investorType}
+                                        onChange={(e) => {
+                                            const newType = e.target.value;
+                                            setInvestorType(newType);
+                                            // Reset profit rate to default for the new type
+                                            if (newType === 'With Product') setInvestorProfitRate(0.05);
+                                            else setInvestorProfitRate(0.07);
+                                        }}
+                                    >
+                                        <option value="With Product">With Product</option>
+                                        <option value="Without Product">Without Product</option>
                                     </select>
                                 </div>
                             </div>
                             <div className="space-y-2">
                                 <label className="text-[11px] font-black text-[#111813] uppercase tracking-widest ml-1 opacity-70">Investor Profit Rate</label>
                                 <div className="relative">
-                                    <select 
+                                    <select
                                         className="w-full rounded-lg border-[#dbe6df] bg-white focus:ring-2 focus:ring-[#006820]/5 focus:border-[#006820] text-[13px] p-3 font-medium text-gray-700"
                                         onChange={(e) => setInvestorProfitRate(parseFloat(e.target.value))}
                                         value={investorProfitRate}
                                     >
-                                        <option value={0.10}>10% Profit Share</option>
-                                        <option value={0.15}>15% Profit Share</option>
+                                        {investorType === 'With Product' ? (
+                                            <>
+                                                <option value={0.05}>5% Profit Share</option>
+                                                <option value={0.06}>6% Profit Share</option>
+                                                <option value={0.07}>7% Profit Share</option>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <option value={0.07}>7% Profit Share</option>
+                                                <option value={0.08}>8% Profit Share</option>
+                                                <option value={0.09}>9% Profit Share</option>
+                                                <option value={0.10}>10% Profit Share</option>
+                                            </>
+                                        )}
+                                        {((investorType === 'With Product' && ![0.05, 0.06, 0.07].includes(investorProfitRate)) ||
+                                            (investorType === 'Without Product' && ![0.07, 0.08, 0.09, 0.10].includes(investorProfitRate))) && (
+                                                <option value={investorProfitRate}>{(investorProfitRate * 100).toFixed(1)}% (Custom)</option>
+                                            )}
                                     </select>
                                 </div>
                             </div>
@@ -274,12 +311,12 @@ const LogSale = () => {
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8">
                             <div className="space-y-2">
-                                <label className="text-[11px] font-black text-[#111813] uppercase tracking-widest ml-1 opacity-70">Amount (USD)</label>
+                                <label className="text-[11px] font-black text-[#111813] uppercase tracking-widest ml-1 opacity-70">Amount (PKR)</label>
                                 <div className="relative">
-                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-[13px]">$</span>
-                                    <input 
-                                        className="w-full rounded-lg border-[#dbe6df] bg-white focus:ring-2 focus:ring-[#006820]/5 focus:border-[#006820] text-[13px] pl-10 p-3 font-bold text-gray-900 transition-all" 
-                                        placeholder="0.00" 
+                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-[13px]">Rs </span>
+                                    <input
+                                        className="w-full rounded-lg border-[#dbe6df] bg-white focus:ring-2 focus:ring-[#006820]/5 focus:border-[#006820] text-[13px] pl-10 p-3 font-bold text-gray-900 transition-all"
+                                        placeholder="0.00"
                                         type="number"
                                         value={amount || ''}
                                         onChange={(e) => setAmount(parseFloat(e.target.value))}
@@ -289,25 +326,26 @@ const LogSale = () => {
                             <div className="space-y-2">
                                 <label className="text-[11px] font-black text-[#111813] uppercase tracking-widest ml-1 opacity-70">Commission Rate</label>
                                 <div className="relative">
-                                    <select 
-                                        className="w-full rounded-lg border-[#dbe6df] bg-white focus:ring-2 focus:ring-[#006820]/5 focus:border-[#006820] text-[13px] p-3 pr-10 font-medium text-gray-700 transition-all" 
+                                    <select
+                                        className="w-full rounded-lg border-[#dbe6df] bg-white focus:ring-2 focus:ring-[#006820]/5 focus:border-[#006820] text-[13px] p-3 pr-10 font-medium text-gray-700 transition-all"
                                         id="commission-select"
-                                        onChange={(e) => {
-                                            const val = e.target.value;
-                                            if (val === 'standard') setCommissionRate(0.05);
-                                            else if (val === 'premium') setCommissionRate(0.08);
-                                        }}
+                                        value={commissionRate}
+                                        onChange={(e) => setCommissionRate(parseFloat(e.target.value))}
                                     >
-                                        <option value="standard">Standard (5%)</option>
-                                        <option value="premium">Premium (8%)</option>
+                                        <option value={0.05}>5% Commission</option>
+                                        <option value={0.06}>6% Commission</option>
+                                        <option value={0.07}>7% Commission</option>
+                                        {![0.05, 0.06, 0.07].includes(commissionRate) && (
+                                            <option value={commissionRate}>{(commissionRate * 100).toFixed(1)}% (Custom)</option>
+                                        )}
                                     </select>
                                 </div>
                             </div>
                             <div className="space-y-2">
                                 <label className="text-[11px] font-black text-[#111813] uppercase tracking-widest ml-1 opacity-70">Payment Method</label>
                                 <div className="relative">
-                                    <select 
-                                        className="w-full rounded-lg border-[#dbe6df] bg-white focus:ring-2 focus:ring-[#006820]/5 focus:border-[#006820] text-[13px] p-3 font-medium text-gray-700 transition-all" 
+                                    <select
+                                        className="w-full rounded-lg border-[#dbe6df] bg-white focus:ring-2 focus:ring-[#006820]/5 focus:border-[#006820] text-[13px] p-3 font-medium text-gray-700 transition-all"
                                         onChange={(e) => setPaymentMethod(e.target.value as any)}
                                         value={paymentMethod}
                                     >
@@ -327,7 +365,7 @@ const LogSale = () => {
                                     </div>
                                     <div>
                                         <p className="text-[#61896f] text-[10px] font-black uppercase tracking-[0.25em] mb-1">CALCULATED COMMISSION</p>
-                                        <p className="text-[#D4AF37] text-5xl font-black tracking-tighter tabular-nums leading-none">${calculatedCommission.toFixed(2)}</p>
+                                        <p className="text-[#D4AF37] text-5xl font-black tracking-tighter tabular-nums leading-none">Rs {calculatedCommission.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
                                     </div>
                                 </div>
                                 <div className="text-right flex flex-col items-end gap-2">
@@ -346,16 +384,16 @@ const LogSale = () => {
                             By clicking "Submit Sale", you confirm that the above details are accurate and comply with the branch sales policy.
                         </p>
                         <div className="flex items-center gap-12 w-full sm:w-auto">
-                            <button 
+                            <button
                                 onClick={() => navigate('/dashboard')}
                                 className="text-[15px] font-black text-gray-400 hover:text-[#006820] transition-colors"
                             >
                                 Cancel
                             </button>
-                            <button 
+                            <button
                                 onClick={handleSubmit}
                                 disabled={isSubmitting}
-                                className="flex items-center justify-center gap-3 px-10 py-3.5 rounded-lg bg-[#006820] hover:bg-black text-white text-[15px] font-black transition-all shadow-2xl shadow-[#006820]/20 disabled:opacity-50 group/submit"
+                                className="flex items-center justify-center gap-3 px-10 py-3.5 rounded-lg bg-[#006820] hover:bg-black text-white text-[15px] font-black transition-all shadow-2xl shadow-[#006820]/20 disabled:opacity-50 group/submit whitespace-nowrap"
                             >
                                 <span>Submit Sale</span>
                                 <span className="text-white opacity-40 font-light ml-1">&gt;</span>
